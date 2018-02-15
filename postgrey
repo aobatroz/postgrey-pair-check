@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T -w
 
-###                                            ###
-### >>> THIS IS THE ORIGINAL POSTGREY 1.34 <<< ###
-###                                            ###
+###
+### POSTGREY MODIFIED BY AOBATROZ: AOBATROZ@GMAIL.COM
+###
 
 # Postgrey: a Postfix Greylisting Policy Server
 # Copyright (c) 2004-2007 ETH Zurich
@@ -401,24 +401,22 @@ sub smtpd_access_policy($$)
     my ($client_net, $client_host) =
         $self->do_client_substitutions($attr->{client_address}, $attr->{client_name});
 
+    ###
+    # AOBATROZ: ignorando ip. Checando somente EMAIL_ORIGEM e EMAIL_DESTINO.
+    #
 
-###
-# UFES: ignorando ip. Checando somente EMAIL_ORIGEM e EMAIL_DESTINO.
-#
+    #my $key    = lc "$client_net/$sender/$attr->{recipient}";
+    my $key    = lc "0.0.0.0/$sender/$attr->{recipient}";
 
-    my $key    = lc "$client_net/$sender/$attr->{recipient}";
-    my $key2    = lc "$sender/$attr->{recipient}";
-
+    
     if ($self->{postgrey}{privacy}) {
         $key = Digest::SHA::sha1_hex($key);
     }
     my $val    = $db->{$key};
-    #my $val    = $db->{$key2};
 
 
-#
-###
-
+    #
+    ###
 
     my $first;
     my $last_was_successful=0;
@@ -505,7 +503,11 @@ sub smtpd_access_policy($$)
         # add X-Greylist header
         my $date = strftime("%a, %d %b %Y %T %Z", localtime);
         my $delay = $now-$first;
-        $self->mylog_action($attr, 'pass', 'triplet found', 'delay='.($delay));
+        #$self->mylog_action($attr, 'pass', 'triplet found', 'delay='.($delay));
+        # AOBATROZ: checa dupla de emails, nao mais tripla
+        $self->mylog_action($attr, 'pass', 'e-mails pair found', 'delay='.($delay));
+
+
         my $msg = $self->{postgrey}{x_greylist_header};
         $msg =~ s/\%t/$delay/;
         $msg =~ s/\%v/$VERSION/;
@@ -514,7 +516,9 @@ sub smtpd_access_policy($$)
         return 'PREPEND ' . $msg;
     }
 
-    $self->mylog_action($attr, 'pass', 'triplet found');
+    #$self->mylog_action($attr, 'pass', 'triplet found');
+    # AOBATROZ: checa dupla de emails, nao mais tripla
+    $self->mylog_action($attr, 'pass', 'e-mails pair found');
     return 'DUNNO';
 }
 
