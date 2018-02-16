@@ -9,7 +9,16 @@ This is a modified version of Postgrey 1.34
 # How to install
 
 [Centos7]
-Put the "postgrey" file in /usr/sbin/postgrey. If it's already there, you need to install postgrey 1.34 in your server.
+- Stop postgrey,  If it's not there, you need to install postgrey 1.34 in your server:
+  #service postgrey stop
+  
+- Put the "postgrey" file in /usr/sbin/postgrey.
+
+- Remove all postgrey data files:
+  #rm -rf /var/spool/postfix/postgrey/*
+  
+- Start postgrey:
+  #service postgrey start
 
 
 ###
